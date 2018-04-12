@@ -126,6 +126,7 @@ class ModuleLearner():
                 mod._optimizer.lr = lr_schedule[epoch]
                 logging.info("Epoch {}, Changed learning rate.".format(epoch))
             logging.info('Epoch {}, Learning rate={}'.format(epoch, mod._optimizer.lr))
+            if self.tensorboard_logging: self.writer.add_scalar(tag='learning_rate', value=mod._optimizer.lr, global_step=epoch + 1)
 
             train_data.reset()
             train_metric.reset()

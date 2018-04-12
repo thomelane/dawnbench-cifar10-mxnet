@@ -186,7 +186,7 @@ class GluonLearner():
                 trainer.set_learning_rate(lr_schedule[epoch])
                 logging.info("Epoch {}, Changed learning rate.".format(epoch))
             logging.info('Epoch {}, Learning rate={}'.format(epoch, trainer.learning_rate))
-            self.writer.add_scalar(tag='learning_rate', value=trainer.learning_rate, global_step=epoch+1)
+            if self.tensorboard_logging: self.writer.add_scalar(tag='learning_rate', value=trainer.learning_rate, global_step=epoch+1)
 
             train_metric.reset()
             samples_processed = 0
