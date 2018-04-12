@@ -5,7 +5,7 @@
       "framework_name": "mxnet",
       "framework_version": "nightly_build_gpu_cuda90",
       "git_url": "https://github.com/thomelane/dawnbench-cifar10-mxnet.git",
-      "command_to_execute": "\"python experiments/resnet164_basic_gluon.py --gpu-idxs=0\""
+      "command_to_execute": "\"python experiments/resnet164_basic_gluon.py --gpu-idxs=0\"",
       "metrics_suffix": "ondemand_p3_2x",
       "results_s3_path": "s3://benchmarkai-metrics-test/p3/dawnbench"
 }
