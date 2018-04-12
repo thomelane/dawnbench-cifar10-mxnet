@@ -1,6 +1,7 @@
 import os
 import logging
 import mxnet as mx
+# from multiprocessing import cpu_count
 
 from .converters import DataIterLoader
 
@@ -12,7 +13,7 @@ class Cifar10():
     def __init__(self,
                  batch_size,
                  data_shape,
-                 padding=None,
+                 padding=0,
                  padding_value=0,
                  normalization_type=None):
         """
@@ -56,6 +57,7 @@ class Cifar10():
 
         shared_args = {'data_shape': data_shape,
                        'batch_size': batch_size}
+                       # 'preprocess_threads': cpu_count()}
 
         if normalization_type == "channel":
             shared_args.update({
