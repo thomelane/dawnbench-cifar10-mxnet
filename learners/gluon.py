@@ -293,9 +293,9 @@ class GluonLearner():
             warm_up_period = 5
             if ((batch_idx >= warm_up_period) and log_batch):
                 # batch estimate, not averaged over multiple batches
-                latency = batch_tock - batch_tick
+                latency = (batch_tock - batch_tick) # seconds
                 speed = batch_size / latency
-                logging.info('Inference. Batch {}, Latency={:.5f}, Speed={:.2f} images/second'.format(batch_idx, latency, speed))
+                logging.info('Inference. Batch {}, Latency={:.5f} ms, Speed={:.2f} images/second'.format(batch_idx, latency * 1000, speed))
             samples_processed += batch_size
 
         logging.info('Completed inference.')
