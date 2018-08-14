@@ -107,6 +107,7 @@ class GluonLearner():
         """
         logging.info("Using Gluon Learner.")
         self.model = model
+        self.run_id = run_id
         if hybridize:
             self.model.hybridize()
             logging.info("Hybridized model.")
@@ -116,7 +117,7 @@ class GluonLearner():
             from mxboard import SummaryWriter
             current_folder = os.path.dirname(os.path.realpath(__file__))
             tensorboard_folder = os.path.join(current_folder, "..", "logs", "tensorboard")
-            summary_filepath = os.path.join(tensorboard_folder, run_id)
+            summary_filepath = os.path.join(tensorboard_folder, self.run_id)
             self.writer = SummaryWriter(logdir=summary_filepath)
 
 
@@ -253,3 +254,48 @@ class GluonLearner():
                 if early_stopping_criteria(val_acc):
                     logging.info("Epoch {}, Reached early stopping target, stopping training.".format(epoch))
                     break
+
+        # checkpoint final model
+        current_folder = os.path.dirname(os.path.realpath(__file__))
+        checkpoint_folder = os.path.join(current_folder, "..", "logs", "checkpoints")
+        checkpoint_filepath = os.path.join(checkpoint_folder, self.run_id + '.params')
+        self.model.save_params(checkpoint_filepath)
+
+
+    def predict(self,
+              test_data,
+              log_frequency=10000):
+        logging.info('Starting inference.')
+        current_folder = os.path.dirname(os.path.realpath(__file__))
+        checkpoint_folder = os.path.join(current_folder, "..", "logs", "checkpoints")
+        checkpoint_filepath = os.path.join(checkpoint_folder, self.run_id + '.params')
+        self.model.load_params(checkpoint_filepath, ctx=self.context)
+
+        samples_processed = 0
+        for batch_idx, (data, label) in enumerate(test_data):
+            batch_tick = time.time()
+            batch_size = data.shape[0]
+
+            # partition data across all devices in context
+            data = mx.gluon.utils.split_and_load(data, ctx_list=self.context, batch_axis=0)
+            label = mx.gluon.utils.split_and_load(label, ctx_list=self.context, batch_axis=0)
+
+            # calculate loss on each partition of data
+            y_pred = []
+            for x_part, y_true_part in zip(data, label):
+                y_pred_part = self.model(x_part)
+                y_pred.append(y_pred_part)
+
+            mx.nd.waitall()
+            batch_tock = time.time()
+            # log batch speed (if a multiple of log_frequency is contained in the last batch)
+            log_batch = (samples_processed // log_frequency) != ((samples_processed + batch_size) // log_frequency)
+            warm_up_period = 5
+            if ((batch_idx >= warm_up_period) and log_batch):
+                # batch estimate, not averaged over multiple batches
+                latency = (batch_tock - batch_tick) # seconds
+                speed = batch_size / latency
+                logging.info('Inference. Batch {}, Latency={:.5f} ms, Speed={:.2f} images/second'.format(batch_idx, latency * 1000, speed))
+            samples_processed += batch_size
+
+        logging.info('Completed inference.')

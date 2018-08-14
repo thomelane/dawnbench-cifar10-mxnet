@@ -21,10 +21,10 @@ if __name__ == "__main__":
 
     batch_size = 128*4
     train_data, valid_data = Cifar10(batch_size=batch_size,
-                                          data_shape=(3, 32, 32),
-                                          padding=4,
-                                          padding_value=0,
-                                          normalization_type="channel").return_dataloaders()
+                                     data_shape=(3, 32, 32),
+                                     padding=4,
+                                     padding_value=0,
+                                     normalization_type="channel").return_dataloaders()
 
     lr_schedule = {0: 0.01*4, 1: 0.02*4, 2: 0.04*4, 3: 0.06*4, 4: 0.08*4, 5: 0.1*4, 95: 0.01*4, 140: 0.001*4}
 
@@ -32,9 +32,9 @@ if __name__ == "__main__":
 
     learner = GluonLearner(model, run_id, gpu_idxs=args.gpu_idxs, hybridize=True)
     learner.fit(train_data=train_data,
-                 valid_data=valid_data,
-                 epochs=185,
-                 lr_schedule=lr_schedule,
-                 initializer=mx.init.Xavier(rnd_type='gaussian', factor_type='out', magnitude=2),
-                 optimizer=mx.optimizer.SGD(learning_rate=lr_schedule[0], rescale_grad=1.0/batch_size, momentum=0.9, wd=0.0005),
-                 early_stopping_criteria=lambda e: e >= 0.94) # DAWNBench CIFAR-10 criteria
+                valid_data=valid_data,
+                epochs=185,
+                lr_schedule=lr_schedule,
+                initializer=mx.init.Xavier(rnd_type='gaussian', factor_type='out', magnitude=2),
+                optimizer=mx.optimizer.SGD(learning_rate=lr_schedule[0], rescale_grad=1.0/batch_size, momentum=0.9, wd=0.0005),
+                early_stopping_criteria=lambda e: e >= 0.94)  # DAWNBench CIFAR-10 criteria
